@@ -1,0 +1,159 @@
+@startuml
+left to right direction
+skinparam monochrome true
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam dpi 180
+skinparam nodesep 65
+skinparam ranksep 75
+skinparam classFontStyle bold
+hide circle
+skinparam class {
+  BackgroundColor white
+  BorderColor black
+  FontColor black
+}
+hide methods
+
+class Member1 {
+  -id : int
+  -username : String
+  -password : String
+  -fullName : String
+  -dateOfBirth : Date
+  -address : String
+  -email : String
+  -phone : String
+}
+class ManagementStaff1 {
+  -managementStaffCode : String
+  -position : String
+}
+class LibraryStaff1 {
+  -libraryStaffCode : String
+  -position : String
+}
+class Reader1 {
+  -readerCode : String
+  -classUnit : String
+  -card : ReaderCard1
+  +MAX_ACTIVE_LOANS : int
+}
+class Supplier1 {
+  -id : int
+  -supplierCode : String
+  -supplierName : String
+  -address : String
+  -phone : String
+  -description : String
+}
+class ReaderCard1 {
+  -id : int
+  -cardCode : String
+  -issueDate : Date
+  -expiryDate : Date
+  -status : String
+  -reader : Reader1
+}
+class DocumentType1 {
+  -id : int
+  -typeCode : String
+  -typeName : String
+  -description : String
+  -documents : List<Document1>
+}
+class Document1 {
+  -id : int
+  -documentCode : String
+  -title : String
+  -author : String
+  -publisher : String
+  -publicationYear : int
+  -description : String
+  -shelfLocation : String
+  -coverImage : String
+  -documentType : DocumentType1
+  -copies : List<DocumentCopy1>
+}
+class DocumentCopy1 {
+  -id : int
+  -barcode : String
+  -loanStatus : String
+  -physicalCondition : String
+  -document : Document1
+}
+class LoanSlip1 {
+  -id : int
+  -loanCode : String
+  -loanDate : Date
+  -dueDate : Date
+  -reader : Reader1
+  -staff : LibraryStaff1
+  -details : List<LoanDetail1>
+}
+class LoanDetail1 {
+  -id : int
+  -borrowedCondition : String
+  -loanSlip : LoanSlip1
+  -copy : DocumentCopy1
+}
+class ImportSlip1 {
+  -id : int
+  -importCode : String
+  -importDate : Date
+  -totalAmount : BigDecimal
+  -supplier : Supplier1
+  -staff : LibraryStaff1
+  -details : List<ImportDetail1>
+}
+class ImportDetail1 {
+  -id : int
+  -quantity : int
+  -unitPrice : BigDecimal
+  -importSlip : ImportSlip1
+  -document : Document1
+}
+class ReturnSlip1 {
+  -id : int
+  -returnCode : String
+  -returnDate : Date
+  -note : String
+  -loanSlip : LoanSlip1
+  -reader : Reader1
+  -staff : LibraryStaff1
+  -details : List<ReturnDetail1>
+}
+class ReturnDetail1 {
+  -id : int
+  -returnedCondition : String
+  -returnSlip : ReturnSlip1
+  -loanDetail : LoanDetail1
+}
+
+ManagementStaff1 --|> Member1
+LibraryStaff1 --|> Member1
+Reader1 --|> Member1
+Reader1 "1" *-- "1" ReaderCard1
+DocumentType1 "1" o-- "0..*" Document1
+Document1 "1" *-- "0..*" DocumentCopy1
+Reader1 "1" --o "0..*" LoanSlip1
+LibraryStaff1 "1" --o "0..*" LoanSlip1
+LoanSlip1 "1" *-- "1..*" LoanDetail1
+DocumentCopy1 "1" --o "0..*" LoanDetail1
+Supplier1 "1" --o "0..*" ImportSlip1
+LibraryStaff1 "1" --o "0..*" ImportSlip1
+ImportSlip1 "1" *-- "1..*" ImportDetail1
+Document1 "1" --o "0..*" ImportDetail1
+LoanSlip1 "1" --o "0..*" ReturnSlip1
+Reader1 "1" --o "0..*" ReturnSlip1
+LibraryStaff1 "1" --o "0..*" ReturnSlip1
+ReturnSlip1 "1" *-- "1..*" ReturnDetail1
+LoanDetail1 "1" --o "0..1" ReturnDetail1
+
+@enduml
+
+
+

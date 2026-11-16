@@ -1,0 +1,75 @@
+@startuml
+title Biểu đồ thiết kế hoạt động mô-đun tra cứu tài liệu
+skinparam monochrome true
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam dpi 175
+skinparam activityBackgroundColor white
+skinparam activityBorderColor black
+skinparam noteBackgroundColor white
+skinparam ArrowColor black
+
+start
+partition "Xử lí tại ReaderHomeView1.jsp" {
+  :Hiển thị trang chủ độc giả;
+  :Độc giả chọn Tra cứu tài liệu;
+  :openSearch()\nChuyển sang trang tìm kiếm;
+}
+partition "Xử lí tại DocumentSearchView1.jsp" {
+  :Hiển thị giao diện tìm kiếm;
+  repeat
+    :Độc giả nhập từ khóa và bấm Tìm kiếm;
+    :search(documentName)\nChuẩn hóa và kiểm tra từ khóa;
+    if (Từ khóa có nội dung?) then ([Có])
+      :Tìm tài liệu theo từ khóa;
+      note right
+        DocumentDAO.searchByTitle(keyword)
+        Tạo Document1 kèm DocumentType1
+        và trả danh sách kết quả
+      end note
+      if (Có tài liệu phù hợp?) then ([Có])
+        :Lưu từ khóa và kết quả vào phiên\nHiển thị danh sách tài liệu;
+      else ([Không])
+        :Thông báo Không tìm thấy\ntài liệu phù hợp;
+      endif
+    else ([Không])
+      :Thông báo Vui lòng nhập từ khóa;
+    endif
+  repeat while (Cần nhập lại từ khóa?) is ([Có]) not ([Không])
+}
+repeat
+  partition "Xử lí tại DocumentSearchView1.jsp" {
+    :Độc giả chọn Xem chi tiết;
+    :viewDetail(documentCode)\nChuyển trang, truyền mã tài liệu;
+  }
+  partition "Xử lí tại DocumentDetailView1.jsp" {
+    :loadDocument(documentCode)\nLấy thông tin chi tiết;
+    note right
+      DocumentDAO.getDocumentDetail(documentCode)
+      Trả Document1 kèm DocumentType1
+    end note
+    if (Tài liệu còn tồn tại?) then ([Có])
+      :Đếm số bản sao khả dụng;
+      note right
+        DocumentCopyDAO.countAvailableByDocument(documentCode)
+        Trả số bản sao đủ điều kiện cho mượn
+      end note
+      :Hiển thị trang Chi tiết tài liệu\nvà số bản sao khả dụng;
+      if (Số bản sao khả dụng bằng 0?) then ([Có])
+        :Hiển thị thêm thông báo\nHiện không có bản sao khả dụng;
+      else ([Không])
+      endif
+    else ([Không])
+      :Thông báo Tài liệu không còn tồn tại;
+    endif
+    :Độc giả bấm Quay lại;
+    :close()\nChuyển về trang tìm kiếm;
+  }
+  partition "Xử lí tại DocumentSearchView1.jsp" {
+    :Khôi phục từ khóa và kết quả từ phiên\nHiển thị lại danh sách tài liệu;
+  }
+repeat while (Xem tài liệu khác?) is ([Có]) not ([Không])
+stop
+@enduml

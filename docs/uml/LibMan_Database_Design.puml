@@ -1,0 +1,166 @@
+@startuml
+' LibMan SQL Server. Presentation based on textbook Figure 4.2, printed page 95.
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam dpi 165
+skinparam nodesep 55
+skinparam ranksep 55
+skinparam roundcorner 12
+skinparam ArrowColor #332B24
+skinparam classFontStyle bold
+skinparam classAttributeIconSize 0
+hide circle
+skinparam class {
+  BackgroundColor #F6C38A
+  HeaderBackgroundColor #F4AC65
+  BorderColor #805027
+  FontColor #271B12
+}
+
+entity tblMember1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> username | VARCHAR(50) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> password | VARCHAR(255) |  |
+  | <color:#215584><&list></color> fullName | NVARCHAR(150) |  |
+  | <color:#215584><&list></color> dateOfBirth | DATE | <color:#8A260C><b>NULL</b></color> |
+  | <color:#215584><&list></color> address | NVARCHAR(255) |  |
+  | <color:#215584><&list></color> email | VARCHAR(150) |  |
+  | <color:#215584><&list></color> phone | VARCHAR(20) |  |
+}
+entity tblManagementStaff1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> <color:#1C593C><b>FK</b></color> |
+  | <color:#215584><&list></color> managementStaffCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> position | NVARCHAR(100) |  |
+}
+entity tblLibraryStaff1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> <color:#1C593C><b>FK</b></color> |
+  | <color:#215584><&list></color> libraryStaffCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> position | NVARCHAR(100) |  |
+}
+entity tblReader1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> <color:#1C593C><b>FK</b></color> |
+  | <color:#215584><&list></color> readerCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> classUnit | NVARCHAR(100) |  |
+}
+entity tblSupplier1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> supplierCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> supplierName | NVARCHAR(150) |  |
+  | <color:#215584><&list></color> address | NVARCHAR(255) |  |
+  | <color:#215584><&list></color> phone | VARCHAR(20) |  |
+  | <color:#215584><&list></color> description | NVARCHAR(500) |  |
+}
+entity tblReaderCard1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> cardCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> issueDate | DATE |  |
+  | <color:#215584><&list></color> expiryDate | DATE |  |
+  | <color:#215584><&list></color> status | VARCHAR(20) |  |
+  | <color:#1C593C><&external-link></color> readerId | INT | <color:#1C593C><b>FK</b></color> <color:#8A260C><b>UQ</b></color> |
+}
+entity tblDocumentType1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> typeCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> typeName | NVARCHAR(100) |  |
+  | <color:#215584><&list></color> description | NVARCHAR(500) |  |
+}
+entity tblDocument1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> documentCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> title | NVARCHAR(250) |  |
+  | <color:#215584><&list></color> author | NVARCHAR(200) |  |
+  | <color:#215584><&list></color> publisher | NVARCHAR(150) |  |
+  | <color:#215584><&list></color> publicationYear | SMALLINT |  |
+  | <color:#215584><&list></color> description | NVARCHAR(1000) |  |
+  | <color:#215584><&list></color> shelfLocation | NVARCHAR(100) |  |
+  | <color:#1C593C><&external-link></color> documentTypeId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#215584><&list></color> coverImage | VARCHAR(500) |  |
+}
+entity tblDocumentCopy1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> barcode | VARCHAR(40) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> loanStatus | VARCHAR(30) |  |
+  | <color:#215584><&list></color> physicalCondition | VARCHAR(30) |  |
+  | <color:#1C593C><&external-link></color> documentId | INT | <color:#1C593C><b>FK</b></color> |
+}
+entity tblLoanSlip1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> loanCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> loanDate | DATE |  |
+  | <color:#215584><&list></color> dueDate | DATE |  |
+  | <color:#1C593C><&external-link></color> readerId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> libraryStaffId | INT | <color:#1C593C><b>FK</b></color> |
+}
+entity tblLoanDetail1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#1C593C><&external-link></color> loanSlipId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> documentCopyId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#215584><&list></color> borrowedCondition | NVARCHAR(100) |  |
+  --
+  {field} <color:#8A260C><b>UNIQUE (loanSlipId, documentCopyId)</b></color>
+}
+entity tblImportSlip1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> importCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> importDate | DATE |  |
+  | <color:#215584><&list></color> totalAmount | DECIMAL(18,2) |  |
+  | <color:#1C593C><&external-link></color> supplierId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> libraryStaffId | INT | <color:#1C593C><b>FK</b></color> |
+}
+entity tblImportDetail1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#1C593C><&external-link></color> importSlipId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> documentId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#215584><&list></color> quantity | INT |  |
+  | <color:#215584><&list></color> unitPrice | DECIMAL(18,2) |  |
+  --
+  {field} <color:#8A260C><b>UNIQUE (importSlipId, documentId)</b></color>
+}
+entity tblReturnSlip1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#215584><&list></color> returnCode | VARCHAR(30) | <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> returnDate | DATE |  |
+  | <color:#215584><&list></color> note | NVARCHAR(500) |  |
+  | <color:#1C593C><&external-link></color> loanSlipId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> readerId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> libraryStaffId | INT | <color:#1C593C><b>FK</b></color> |
+}
+entity tblReturnDetail1 {
+  | <color:#825000><&key></color> **id** | **INT** | <color:#8A260C><b>PK</b></color> |
+  | <color:#1C593C><&external-link></color> returnSlipId | INT | <color:#1C593C><b>FK</b></color> |
+  | <color:#1C593C><&external-link></color> loanDetailId | INT | <color:#1C593C><b>FK</b></color> <color:#8A260C><b>UQ</b></color> |
+  | <color:#215584><&list></color> returnedCondition | NVARCHAR(100) |  |
+}
+tblMember1 ||--o| tblManagementStaff1
+tblMember1 ||--o| tblLibraryStaff1
+tblMember1 ||--o| tblReader1
+tblReader1 ||..o| tblReaderCard1
+tblDocumentType1 ||..o{ tblDocument1
+tblDocument1 ||..o{ tblDocumentCopy1
+tblReader1 ||..o{ tblLoanSlip1
+tblLibraryStaff1 ||..o{ tblLoanSlip1
+tblLoanSlip1 ||..|{ tblLoanDetail1
+tblDocumentCopy1 ||..o{ tblLoanDetail1
+tblSupplier1 ||..o{ tblImportSlip1
+tblLibraryStaff1 ||..o{ tblImportSlip1
+tblImportSlip1 ||..|{ tblImportDetail1
+tblDocument1 ||..o{ tblImportDetail1
+tblLoanSlip1 ||..o{ tblReturnSlip1
+tblReader1 ||..o{ tblReturnSlip1
+tblLibraryStaff1 ||..o{ tblReturnSlip1
+tblReturnSlip1 ||..|{ tblReturnDetail1
+tblLoanDetail1 ||..o| tblReturnDetail1
+
+legend bottom center
+  PK = khóa chính   |   FK = khóa ngoại   |   UQ = duy nhất   |   NULL = được để trống
+  Nét liền: FK thuộc PK   |   Nét đứt: FK ngoài PK
+endlegend
+
+caption Biểu đồ thiết kế CSDL của hệ thống LibMan
+@enduml
+
+

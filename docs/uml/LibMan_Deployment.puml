@@ -1,0 +1,43 @@
+@startuml
+skinparam monochrome true
+skinparam linetype ortho
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 15
+skinparam dpi 175
+skinparam nodesep 80
+skinparam ranksep 42
+skinparam nodeBackgroundColor white
+skinparam componentBackgroundColor white
+skinparam componentStyle uml2
+skinparam componentFontStyle bold
+skinparam componentStereotypeFontSize 12
+skinparam roundcorner 0
+top to bottom direction
+
+node "Web Browser:\nGoogle Chrome" as Browser <<device>>
+
+node "Server - Windows 11 25H2" as Host <<device>> {
+  component "Eclipse Temurin JDK 21.0.8+9 LTS\nJava 17 compilation target" as Java <<component>>
+  component "Apache Tomcat 9.0.123" as Tomcat <<component>>
+  component "Servlet 4.0 / JSP 2.3\njavax namespace" as WebAPI <<component>>
+  component "H2 Database 2.3.232\nEmbedded file: catalog.mv.db\nSQL Server compatibility mode" as DB <<component>>
+
+  component "Application Libraries:\nH2 JDBC Driver 2.3.232 (demo)\nMicrosoft JDBC 13.2.0.jre11 (bundled)" as JDBC <<component>>
+  component "LibMan Web Application: /LibMan\nJSP / DAO / Model\nHTML / CSS / JavaScript" as App <<component>>
+  component "Bundled Library:\nByte Buddy 1.15.11" as Libraries <<component>>
+
+  Java -[hidden]right- JDBC
+  Java -[hidden]down- Tomcat
+  Tomcat -[hidden]right- App
+  Tomcat -[hidden]down- WebAPI
+  WebAPI -[hidden]down- DB
+  JDBC -[hidden]down- App
+  App -[hidden]down- Libraries
+  WebAPI -[hidden]right- Libraries
+}
+
+Host -left- Browser : HTTP
+
+@enduml

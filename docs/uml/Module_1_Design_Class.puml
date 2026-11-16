@@ -1,0 +1,135 @@
+@startuml
+' Figure 4.4 presentation. The code remains the reference for accessors and implementation helpers.
+' LibMan - detailed design, based on the supplied Word and Chapter 4.
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam monochrome true
+skinparam backgroundColor white
+skinparam dpi 160
+skinparam defaultFontName Arial
+skinparam defaultFontSize 15
+skinparam classFontSize 15
+skinparam classFontStyle bold
+skinparam classAttributeFontSize 13
+skinparam classBackgroundColor white
+skinparam classBorderColor black
+skinparam ArrowColor black
+skinparam roundcorner 0
+skinparam nodesep 52
+skinparam ranksep 30
+skinparam ArrowFontSize 11
+hide circle
+hide empty members
+top to bottom direction
+
+together {
+class "ReaderHome" as Home {
+  -lnkSearchDocument : Link
+  -searchUrl : String
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +openSearch() : void
+  ' +render() : void
+}
+class "DocumentSearch" as Search {
+  -txtDocumentName : Text
+  -btnSearch : Submit
+  -btnBack : Submit
+  -tblDocumentResults : Table
+  -btnViewDetail : Submit
+  ' JSP form field -hdnAction : Hidden
+  ' JSP form field -hdnDocumentCode : Hidden
+  -inDocumentName : String
+  -outDocumentList : List<Document1>
+  -outMessage : String
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +search(documentName : String) : void
+  ' +viewDetail(documentCode : String) : void
+  ' +render() : void
+}
+class "DocumentDetails" as Detail {
+  -btnClose : Submit
+  -tblDocumentDetails : Table
+  ' JSP form field -hdnAction : Hidden
+  ' JSP form field -hdnDocumentCode : Hidden
+  -document : Document1
+  -availableCount : int
+  -outMessage : String
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +loadDocument(documentCode : String) : void
+  ' +close() : void
+  ' +render() : void
+}
+}
+abstract class DAO {
+  #con : Connection
+  --
+  #DAO()
+  ' Additional implementation members from DAO.java.
+  ' #ownsConnection : boolean
+  ' +close() : void
+}
+together {
+class DocumentDAO {
+  ' SQL query constant SELECT is declared in Java.
+  +DocumentDAO()
+  +searchByTitle(keyword : String) : List<Document1>
+  +getDocumentDetail(documentCode : String) : Document1
+}
+class DocumentCopyDAO {
+  +DocumentCopyDAO()
+  +countAvailableByDocument(documentCode : String) : int
+}
+}
+class DocumentType1 {
+  -id : int
+  -typeCode : String
+  -typeName : String
+  -description : String
+  -documents : List<Document1>
+}
+class Document1 {
+  -id : int
+  -documentCode : String
+  -title : String
+  -author : String
+  -publisher : String
+  -publicationYear : int
+  -description : String
+  -shelfLocation : String
+  -coverImage : String
+  -documentType : DocumentType1
+  -copies : List<DocumentCopy1>
+}
+class DocumentCopy1 {
+  -id : int
+  -barcode : String
+  -loanStatus : String
+  -physicalCondition : String
+  -document : Document1
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +checkBorrowable() : boolean
+  ' +getAvailability() : boolean
+}
+' Solid working associations follow textbook Figure 4.4.
+
+Home -right- Search
+Search -right- Detail
+Search -- DocumentDAO
+Detail -- DocumentDAO
+Detail -- DocumentCopyDAO
+DocumentDAO -left-|> DAO
+DocumentCopyDAO -left-|> DAO
+DocumentDAO -- Document1
+DocumentDAO -- DocumentType1
+DocumentCopyDAO -- DocumentCopy1
+
+' Exclusive copy ownership is inherited from the supplied entity diagram.
+DocumentType1 "1" o-right- "0..*" Document1
+Document1 "1" *-right- "0..*" DocumentCopy1
+
+' Layout-only constraints; they never appear as business relationships.
+DocumentDAO -[hidden]right- DocumentCopyDAO
+
+caption Biểu đồ lớp thiết kế mô-đun tra cứu tài liệu
+@enduml

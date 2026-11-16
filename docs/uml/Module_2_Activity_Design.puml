@@ -1,0 +1,121 @@
+@startuml
+title Biểu đồ thiết kế hoạt động mô-đun cho mượn tài liệu
+skinparam monochrome true
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam dpi 175
+skinparam activityBackgroundColor white
+skinparam noteBackgroundColor white
+start
+partition "Xử lí tại LibraryStaffHomeView1.jsp" {
+  :Hiển thị trang chủ nhân viên đã đăng nhập;
+  :Nhân viên chọn Cho mượn tài liệu;
+  :openLoanForm()\nChuyển đến LoanFormView1.jsp;
+}
+partition "Xử lí tại LoanFormView1.jsp — lập phiếu" {
+  :Hiển thị giao diện lập phiếu mượn;
+  repeat
+    :Nhận mã thẻ hoặc mã độc giả;
+    :identifyByCard(cardCode);
+    note right: ReaderCardDAO.findReaderByCardCode()
+    if (Tìm thấy theo mã thẻ?) then ([Không])
+      :searchReader(readerCode);
+      note right
+        ReaderDAO.searchByCode()
+        Nếu tìm được độc giả, lấy thẻ bằng
+        ReaderCardDAO.findByReaderCode()
+      end note
+    else ([Có])
+    endif
+    if (Đã xác định được độc giả?) then ([Có])
+      :Kiểm tra thông tin độc giả;
+      note right
+        checkReader()
+        LoanDetailDAO.countActiveByReader()
+        ReaderCard1.isValid()
+        Reader1.checkBorrowEligibility()
+      end note
+      :Hiển thị thông tin độc giả;
+    else ([Không])
+    endif
+  backward:Thông báo lý do và chờ nhập lại;
+  repeat while (Độc giả đủ điều kiện mượn?) is ([Không]) not ([Có])
+}
+repeat
+  partition "Xử lí tại LoanFormView1.jsp — danh sách mượn" {
+    repeat
+      :Nhân viên thao tác trên danh sách mượn;
+      if (Thao tác được chọn?) then ([Thêm])
+        :scanCopy(barcode)\nTìm bản sao theo barcode;
+        note right: DocumentCopyDAO.findByBarcode()
+        if (Tìm thấy bản sao?) then ([Có])
+          :addCopy(copy)\nKiểm tra trạng thái và tình trạng vật lý;
+          note right: DocumentCopy1.checkBorrowable()
+          if (Bản sao được phép cho mượn?) then ([Có])
+            :Kiểm tra trùng barcode và giới hạn mượn;
+            note right
+              LoanSlip1.containsBarcode(barcode)
+              Reader1.checkBorrowEligibility(active, selected + 1)
+              Tổng đang mượn và chọn mới tối đa 5
+            end note
+            if (Không trùng và trong giới hạn?) then ([Có])
+              :Thêm bản sao vào phiếu nháp;
+              note right: LoanSlip1.addLoanDetail(copy)
+            else ([Không])
+              :Báo trùng barcode hoặc vượt giới hạn;
+            endif
+          else ([Không])
+            :Báo bản sao chưa đủ điều kiện cho mượn;
+          endif
+        else ([Không])
+          :Báo không tìm thấy barcode;
+        endif
+      else ([Xóa])
+        :removeCopy(barcode)\nXóa dòng được chọn khỏi nháp;
+        note right: LoanSlip1.removeLoanDetail(barcode)
+      endif
+      :Hiển thị danh sách mượn;
+    repeat while (Đã bấm Xác nhận với danh sách hợp lệ?) is ([Không]) not ([Có])
+    :confirm()\nChuyển yêu cầu lưu;
+  }
+  partition "Xử lí tại doSaveLoan.jsp" {
+    :submit()\nChuẩn bị phiếu nháp;
+    if (isReadyToSave()?) then ([Hợp lệ])
+      :Kiểm tra lại và ghi nhận giao dịch mượn;
+      note right
+        LoanSlipDAO.createLoanSlip(draft)
+        Lưu phiếu, lưu chi tiết và cập nhật
+        bản sao trong cùng giao dịch.
+        Hoàn tác nếu giao dịch gặp lỗi.
+      end note
+    else ([Không hợp lệ])
+      :Chuẩn bị thông báo lỗi;
+    endif
+    :showResult()\nChuyển về trang lập phiếu;
+  }
+backward:Hiển thị lỗi trên trang lập phiếu;
+repeat while (Lưu phiếu thành công?) is ([Không]) not ([Có])
+partition "Xử lí tại LoanFormView1.jsp — phiếu đã lưu" {
+  :Thông báo lưu phiếu thành công;
+  :Lấy dữ liệu phiếu để in;
+  note right: LoanSlipDAO.getForPrint(loanCode)
+  if (Lấy được dữ liệu phiếu?) then ([Có])
+    :printLoan(slip)\nHiển thị phiếu và tự mở hộp thoại in;
+  else ([Không])
+    :Thông báo chưa lấy được dữ liệu in;
+    stop
+  endif
+}
+partition "Thao tác của nhân viên trong hộp thoại in" {
+  if (Nhân viên chọn In?) then ([In])
+    :Xác nhận in trong hộp thoại;
+  else ([Đóng hộp thoại])
+    :Đóng hộp thoại;
+    stop
+  endif
+}
+:Sau khi nhận bản in, nhân viên giao\nphiếu, thẻ và tài liệu cho độc giả;
+stop
+@enduml

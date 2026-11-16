@@ -1,0 +1,8 @@
+{
+  "java_files": 24,
+  "jsp_files": 8,
+  "source_archive_files": 70,
+  "war_bytes": 8735385,
+  "jsp_compilation": "0 errors",
+  "database_execution": "not run: no connection credentials supplied"
+}

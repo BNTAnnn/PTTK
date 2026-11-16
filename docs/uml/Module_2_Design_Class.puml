@@ -1,0 +1,272 @@
+@startuml
+' Figure 4.4 presentation. The code remains the reference for accessors and implementation helpers.
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam dpi 160
+skinparam defaultFontName Arial
+skinparam defaultFontSize 15
+skinparam classFontSize 15
+skinparam classFontStyle bold
+skinparam classAttributeFontSize 13
+skinparam classBackgroundColor #7DCBE9
+skinparam classBorderColor black
+skinparam ArrowColor black
+skinparam roundcorner 0
+skinparam nodesep 58
+skinparam ranksep 35
+skinparam ArrowFontSize 11
+hide circle
+hide empty members
+top to bottom direction
+
+together {
+class "LibraryStaffHomeView1.jsp" as Home {
+  -btnLendDocuments : Submit
+  -btnLogout : Submit
+  -staff : LibraryStaff1
+  ' JSP implementation field -loanUrl : String
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +openLoanForm() : void
+  ' +render() : void
+}
+class "LoanFormView1.jsp" as Form {
+  -txtReaderIdentifier : Text
+  -btnSearchReader : Submit
+  -txtBarcode : Text
+  -btnAddCopy : Submit
+  -pnlReaderInfo : Panel
+  -tblLoanDocuments : Table
+  -tblLoanReceipt : Table
+  -btnLogout : Submit
+  -btnRemoveCopy : Submit
+  -btnConfirm : Submit
+  ' JSP form field -hdnAction : Hidden
+  ' JSP form field -hdnBarcode : Hidden
+  ' JSP form field -hdnDraftToken : Hidden
+  ' JSP form field -hdnCsrfToken : Hidden
+  ' JSP implementation field -inCardCode : String
+  -reader : Reader1
+  -draft : LoanSlip1
+  -activeLoanCount : int
+  -outMessage : String
+  -scanMessage : String
+  ' JSP implementation field -ready : boolean
+  -savedSlip : LoanSlip1
+  ' JSP implementation field -inReaderCode : String
+  ' JSP implementation field -inBarcode : String
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +identifyByCard(cardCode : String) : void
+  ' +searchReader(readerCode : String) : void
+  ' -checkReader() : void
+  ' +scanCopy(barcode : String) : void
+  ' +addCopy(copy : DocumentCopy1) : boolean
+  ' +removeCopy(barcode : String) : void
+  ' +confirm() : void
+  ' +printLoan(slip : LoanSlip1) : void
+  ' The same JSP renders the saved receipt and opens the browser print dialog.
+  ' +reset() : void
+  ' +render() : void
+}
+class "doSaveLoan.jsp" as Save {
+  -draft : LoanSlip1
+  -savedSlip : LoanSlip1
+  -outMessage : String
+  ' JSP form field -hdnDraftToken : Hidden
+  ' JSP form field -hdnCsrfToken : Hidden
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +submit() : void
+  ' +showResult() : void
+}
+}
+class DAO {
+  -con : Connection
+  --
+  +DAO()
+  ' Additional implementation members from DAO.java.
+  ' #ownsConnection : boolean
+  ' #beginTransaction() : void
+  ' #commit() : void
+  ' #rollback() : void
+  ' +close() : void
+}
+together {
+class ReaderDAO {
+  +ReaderDAO()
+  +searchByCode(readerCode : String) : Reader1
+  +findByCodeForUpdate(readerCode : String) : Reader1
+}
+class ReaderCardDAO {
+  +ReaderCardDAO()
+  +findReaderByCardCode(cardCode : String) : Reader1
+  +findByReaderCode(readerCode : String) :\n    ReaderCard1
+  +findByReaderCodeForUpdate(readerCode : String) :\n    ReaderCard1
+}
+class LoanSlipDAO {
+  -readerDAO : ReaderDAO
+  -cardDAO : ReaderCardDAO
+  -detailDAO : LoanDetailDAO
+  -copyDAO : DocumentCopyDAO
+  --
+  +LoanSlipDAO()
+  +createLoanSlip(draft : LoanSlip1) : LoanSlip1
+  #insertLoanSlip(slip : LoanSlip1) : String
+  +getForPrint(loanCode : String) : LoanSlip1
+}
+class LoanDetailDAO {
+  +LoanDetailDAO()
+  +countActiveByReader(readerCode : String) : int
+  +saveLoanDetails(slip : LoanSlip1) : int
+}
+class DocumentCopyDAO {
+  +DocumentCopyDAO()
+  +findByBarcode(barcode : String) : DocumentCopy1
+  +findByBarcodeForUpdate(barcode : String) :\n    DocumentCopy1
+  +markBorrowedIfAvailable(barcode : String) : int
+}
+}
+together {
+abstract class Member1 {
+  -id : int
+  -username : String
+  -password : String
+  -fullName : String
+  -dateOfBirth : Date
+  -address : String
+  -email : String
+  -phone : String
+}
+class Reader1 {
+  -readerCode : String
+  -classUnit : String
+  -card : ReaderCard1
+  {static} +MAX_ACTIVE_LOANS : int = 5
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  --
+  +checkBorrowEligibility(active : int,\n    selected : int) : boolean
+}
+class LibraryStaff1 {
+  -libraryStaffCode : String
+  -position : String
+}
+}
+class ReaderCard1 {
+  -id : int
+  -cardCode : String
+  -issueDate : Date
+  -expiryDate : Date
+  -status : String
+  -reader : Reader1
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  --
+  +isValid(at : Date) : boolean
+}
+class LoanSlip1 {
+  -id : int
+  -loanCode : String
+  -loanDate : Date
+  -dueDate : Date
+  -reader : Reader1
+  -staff : LibraryStaff1
+  -details : List<LoanDetail1>
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  --
+  +containsBarcode(barcode : String) : boolean
+  +addLoanDetail(copy : DocumentCopy1) : boolean
+  +removeLoanDetail(barcode : String) : boolean
+  +isReadyToSave() : boolean
+}
+class LoanDetail1 {
+  -id : int
+  -borrowedCondition : String
+  -loanSlip : LoanSlip1
+  -copy : DocumentCopy1
+  --
+  +LoanDetail1(copy : DocumentCopy1,\n    borrowedCondition : String)
+}
+together {
+class DocumentType1 {
+  -id : int
+  -typeCode : String
+  -typeName : String
+  -description : String
+  -documents : List<Document1>
+}
+class Document1 {
+  -id : int
+  -documentCode : String
+  -title : String
+  -author : String
+  -publisher : String
+  -publicationYear : int
+  -description : String
+  -shelfLocation : String
+  -coverImage : String
+  -documentType : DocumentType1
+  -copies : List<DocumentCopy1>
+}
+class DocumentCopy1 {
+  -id : int
+  -barcode : String
+  -loanStatus : String
+  -physicalCondition : String
+  -document : Document1
+  ' Operations for cross-checking against the sequence and JSP or Java source.
+  ' +getAvailability() : boolean
+  --
+  +checkBorrowable() : boolean
+}
+}
+
+Home -right- Form
+Form -right- Save
+Form -[norank]- ReaderDAO
+Form -[norank]- ReaderCardDAO
+Form -[norank]- LoanDetailDAO
+Form -[norank]- DocumentCopyDAO
+Save -- LoanSlipDAO
+ReaderDAO -up-|> DAO
+ReaderCardDAO -up-|> DAO
+LoanSlipDAO -up-|> DAO
+LoanDetailDAO -up-|> DAO
+DocumentCopyDAO -up-|> DAO
+LoanSlipDAO -[norank]- ReaderDAO
+LoanSlipDAO -[norank]- ReaderCardDAO
+LoanSlipDAO -[norank]- LoanDetailDAO
+LoanSlipDAO -[norank]- DocumentCopyDAO
+ReaderDAO -- Reader1
+ReaderCardDAO -- ReaderCard1
+LoanSlipDAO -- LoanSlip1
+LoanDetailDAO -- LoanDetail1
+DocumentCopyDAO -- DocumentCopy1
+DocumentType1 "1" o-down- "0..*" Document1
+DocumentCopyDAO -- DocumentType1
+Form -[norank]- LoanSlipDAO
+Member1 <|-- LibraryStaff1
+Member1 <|-- Reader1
+Reader1 "1" *-right- "1" ReaderCard1
+LoanSlip1 "0..*" o-left- "1" LibraryStaff1
+Reader1 "1" -right-o "0..*\n " LoanSlip1
+LoanSlip1 "1" *-right- "1..*" LoanDetail1
+DocumentCopy1 "1" -left-o "0..*" LoanDetail1
+Document1 "1" *-right- "0..*" DocumentCopy1
+Form -[hidden]down- DAO
+DAO -[hidden]down- LoanDetailDAO
+ReaderDAO -[hidden]right- ReaderCardDAO
+ReaderCardDAO -[hidden]right- LoanSlipDAO
+LoanSlipDAO -[hidden]right- LoanDetailDAO
+LoanDetailDAO -[hidden]right- DocumentCopyDAO
+ReaderDAO -[hidden]down- Member1
+DocumentCopyDAO -[hidden]down- Document1
+Member1 -[hidden]down- ReaderCard1
+Member1 -[hidden]down- LoanSlip1
+Member1 -[hidden]down- LoanDetail1
+Member1 -[hidden]down- DocumentCopy1
+ReaderCard1 -[hidden]right- LibraryStaff1
+Reader1 -[hidden]right- ReaderCard1
+LibraryStaff1 -[hidden]right- LoanSlip1
+LoanSlip1 -[hidden]right- LoanDetail1
+LoanDetail1 -[hidden]right- DocumentCopy1
+caption Biểu đồ lớp thiết kế mô-đun cho mượn tài liệu
+@enduml
